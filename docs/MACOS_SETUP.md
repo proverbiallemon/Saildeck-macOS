@@ -116,7 +116,19 @@ open ~/Library/Application\ Support/com.shipofharkinian.soh/mods/
 
 ## Installing Mods
 
-1. Download `.otr` or `.o2r` mod files
+### Option 1: GameBanana Browser (Recommended)
+
+1. Launch Saildeck
+2. Click the **"Download Mods"** button
+3. Click the **GameBanana** icon in the sidebar
+4. Browse, search, or filter mods by category
+5. Click **"⬇ Download"** on any mod to install it
+6. The mod will be downloaded, extracted, and installed automatically
+7. Return to the main window to enable/disable the mod
+
+### Option 2: Manual Installation
+
+1. Download `.otr` or `.o2r` mod files from GameBanana or other sources
 2. Place them in the mods folder (see above)
 3. Launch Saildeck - mods will appear in the list
 4. Double-click or select + "Toggle state" to enable/disable

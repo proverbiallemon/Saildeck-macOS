@@ -29,6 +29,14 @@ This fork is released under the same **GPL-3.0 license** as the original.
 - Uses `open` command instead of `os.startfile()` for Finder integration
 - Fixed Windows-only dependencies (`pywin32-ctypes` now conditional)
 
+### GameBanana Mod Browser (v1.3.0)
+- **Browse mods directly** - Browse Ship of Harkinian mods from GameBanana without leaving the app
+- **Search & filter** - Search by name, filter by category (Models, Textures, Music, etc.)
+- **One-click install** - Download and install mods with a single click
+- **Progress tracking** - Progress bar shows download status
+- **Automatic organization** - Mods are installed into organized subfolders
+- **Security hardened** - Zip Slip protection, MD5 verification, file safety validation
+
 ### UI Modernization (v1.2.0)
 - **Light/Dark/System theme modes** - Follows your system appearance automatically
 - **8 theme options** - 4 light themes (Litera, Flatly, Cosmo, Minty) and 4 dark themes (Darkly, Superhero, Cyborg, Solar)
@@ -86,6 +94,7 @@ pip install -r requirements.txt
 
 ### Features
 
+- **Browse & download mods** from GameBanana with built-in mod browser
 - Toggle mods on/off (double-click or use Toggle button)
 - Delete mods (sends to Trash)
 - Open mods folder directly in Finder
@@ -97,7 +106,7 @@ pip install -r requirements.txt
 
 ## Status
 
-**Beta** - This macOS port is functional but may have bugs. Please report issues!
+**Stable** - v1.3.0 is the first stable release. Please report any issues!
 
 ## Original Saildeck Features
 
