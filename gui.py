@@ -187,13 +187,13 @@ class ModManagerGUI(tb.Window):
                             bootstyle="secondary", cursor="hand2", width=6, style="Tiny.TButton")
         load_btn.pack(side="left", padx=(0, 10))
 
-        #tb.Button(
-        #    bottom,
-        #    text="⬇️ Download Mods",
-        #    command=lambda: open_downloader_window(self),
-        #    bootstyle="primary",
-        #    cursor="hand2"
-        #).pack(side="right", padx=10)
+        tb.Button(
+            bottom,
+            text="⬇️ Download Mods",
+            command=lambda: open_downloader_window(self, self.mods_dir, self.refresh_mod_list),
+            bootstyle="primary",
+            cursor="hand2"
+        ).pack(side="right", padx=10)
 
         self.tree.bind("<Delete>", self.on_delete_key)
         self.tree.bind("<<TreeviewOpen>>", self.on_tree_open_close)
@@ -541,18 +541,6 @@ class ModManagerGUI(tb.Window):
         except Exception as e:
             self.status_var.set(f"Unexpected error: {e}")
 
-    def open_downloader_window(self):
-        downloader_window = tb.Toplevel(self)
-        downloader_window.title("Download Mods")
-        downloader_window.geometry("500x400")
-        downloader_window.resizable(False, False)
-
-        font = get_platform_font()
-        label = tb.Label(downloader_window, text="Mod management (from GameBanana...)", font=(font, 12))
-        label.pack(pady=20)
-
-        tb.Label(downloader_window, text="Feature under development").pack(pady=10)
-    
     @property
     def selected_modpack(self):
         return self.modpack_combobox.get()

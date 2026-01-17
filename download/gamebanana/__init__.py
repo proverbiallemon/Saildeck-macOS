@@ -1,0 +1,1 @@
+# GameBanana integration module
