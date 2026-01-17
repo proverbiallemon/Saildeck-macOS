@@ -31,44 +31,44 @@ SPECIAL_THEMES = {
         "name": "CRT Green",
         "type": "dark",
         "colors": {
-            "primary": "#00FF41",
+            "primary": "#004D00",      # Dark green for button backgrounds
             "secondary": "#0A1F0A",
-            "success": "#00FF41",
-            "info": "#39FF14",
-            "warning": "#00994D",
-            "danger": "#FF0000",
+            "success": "#003300",      # Darker green so text is visible
+            "info": "#004D00",
+            "warning": "#004D00",
+            "danger": "#660000",       # Dark red
             "light": "#00FF41",
             "dark": "#0D0208",
             "bg": "#0D0208",
             "fg": "#00FF41",
-            "selectbg": "#0A1F0A",
+            "selectbg": "#003300",
             "selectfg": "#00FF41",
             "border": "#003300",
             "inputfg": "#00FF41",
             "inputbg": "#0A1F0A",
-            "active": "#001A00",
+            "active": "#002200",
         }
     },
     "crt_amber": {
         "name": "CRT Amber",
         "type": "dark",
         "colors": {
-            "primary": "#FFB000",
+            "primary": "#4D3000",      # Dark amber for button backgrounds
             "secondary": "#1A0F00",
-            "success": "#FFB000",
-            "info": "#FFC933",
-            "warning": "#996600",
-            "danger": "#FF0000",
+            "success": "#3D2600",      # Darker amber so text is visible
+            "info": "#4D3000",
+            "warning": "#4D3000",
+            "danger": "#660000",       # Dark red
             "light": "#FFB000",
             "dark": "#0D0800",
             "bg": "#0D0800",
             "fg": "#FFB000",
-            "selectbg": "#1A0F00",
+            "selectbg": "#3D2600",
             "selectfg": "#FFB000",
             "border": "#332200",
             "inputfg": "#FFB000",
             "inputbg": "#1A0F00",
-            "active": "#0A0500",
+            "active": "#261800",
         }
     },
 }
@@ -81,7 +81,6 @@ DEFAULT_SETTINGS = {
         "special_theme": None,  # None or key from SPECIAL_THEMES
         "crt_scanlines": True,
         "crt_scanline_intensity": 0.3,  # 0.0 to 1.0
-        "crt_flicker": False,
     },
     "behavior": {
         "skip_update": False,
@@ -504,16 +503,6 @@ class ThemeManager:
         """Set the CRT scanline intensity (0.0 to 1.0)."""
         intensity = max(0.0, min(1.0, float(intensity)))
         self._settings["appearance"]["crt_scanline_intensity"] = intensity
-        save_settings(self._settings)
-        self._notify_callbacks()
-
-    def get_crt_flicker_enabled(self):
-        """Check if CRT flicker effect is enabled."""
-        return self._settings.get("appearance", {}).get("crt_flicker", False)
-
-    def set_crt_flicker_enabled(self, enabled):
-        """Enable or disable CRT flicker effect."""
-        self._settings["appearance"]["crt_flicker"] = bool(enabled)
         save_settings(self._settings)
         self._notify_callbacks()
 

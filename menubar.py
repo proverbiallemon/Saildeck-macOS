@@ -134,17 +134,6 @@ def init_menubar(window):
                 command=_toggle_scanlines
             )
 
-            # Flicker toggle
-            flicker_label = "Flicker Effect"
-            if theme_manager.get_crt_flicker_enabled():
-                flicker_label += " [ON]"
-            else:
-                flicker_label += " [OFF]"
-            crt_menu.add_command(
-                label=flicker_label,
-                command=_toggle_flicker
-            )
-
             view_menu.add_cascade(label="CRT Effects", menu=crt_menu)
 
     def _set_light_theme(theme):
@@ -162,11 +151,6 @@ def init_menubar(window):
     def _toggle_scanlines():
         current = theme_manager.get_crt_scanlines_enabled()
         theme_manager.set_crt_scanlines_enabled(not current)
-        _rebuild_view_menu()
-
-    def _toggle_flicker():
-        current = theme_manager.get_crt_flicker_enabled()
-        theme_manager.set_crt_flicker_enabled(not current)
         _rebuild_view_menu()
 
     # Build initial view menu

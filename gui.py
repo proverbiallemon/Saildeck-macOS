@@ -127,7 +127,6 @@ class ModManagerGUI(tb.Window):
         """Update CRT effects based on current settings."""
         is_crt_active = self.theme_manager.is_special_theme_active()
         scanlines_enabled = self.theme_manager.get_crt_scanlines_enabled()
-        flicker_enabled = self.theme_manager.get_crt_flicker_enabled()
 
         # Update scanline intensity
         self.scanline_overlay.set_intensity(
@@ -137,10 +136,6 @@ class ModManagerGUI(tb.Window):
         if is_crt_active and scanlines_enabled:
             if not self.scanline_overlay.enabled:
                 self.scanline_overlay.enable()
-            if flicker_enabled:
-                self.scanline_overlay.start_flicker(interval_ms=100)
-            else:
-                self.scanline_overlay.stop_flicker()
         else:
             self.scanline_overlay.disable()
 

@@ -198,17 +198,9 @@ def show_settings(parent):
 
     var_intensity.trace_add("write", update_intensity_label)
 
-    var_flicker = tb.BooleanVar(value=settings["appearance"].get("crt_flicker", False))
-    tb.Checkbutton(
-        crt_options_frame,
-        text="Enable flicker effect (subtle screen flicker)",
-        variable=var_flicker,
-        bootstyle="round-toggle"
-    ).pack(anchor="w", pady=(0, 5))
-
     tb.Label(
         crt_options_frame,
-        text="Note: CRT themes apply retro phosphor colors.\nScanline effects are limited due to tkinter constraints.",
+        text="Note: CRT themes apply retro phosphor colors.\nScanline overlay follows the main window.",
         font=(font, 8),
         bootstyle="secondary"
     ).pack(anchor="w", pady=(10, 0))
@@ -223,12 +215,10 @@ def show_settings(parent):
         """Apply CRT option changes."""
         theme_manager.set_crt_scanlines_enabled(var_scanlines.get())
         theme_manager.set_crt_scanline_intensity(var_intensity.get())
-        theme_manager.set_crt_flicker_enabled(var_flicker.get())
 
     special_theme_var.trace_add("write", on_special_theme_change)
     var_scanlines.trace_add("write", on_crt_option_change)
     var_intensity.trace_add("write", on_crt_option_change)
-    var_flicker.trace_add("write", on_crt_option_change)
 
     # ========== Behavior Tab ==========
     behavior_frame = tb.Frame(notebook, padding=15)
@@ -318,7 +308,6 @@ def show_settings(parent):
             special_theme_var.set("none")
             var_scanlines.set(True)
             var_intensity.set(0.3)
-            var_flicker.set(False)
             var_skip_update.set(False)
             var_enable_altassets.set(True)
             var_confirm_delete.set(True)
