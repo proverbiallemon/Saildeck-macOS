@@ -123,6 +123,7 @@ class ModManagerGUI(tb.Window):
 
         tb.Button(bottom, text="⚙️ Toggle state", command=self.toggle_selected_mod, bootstyle="warning", cursor="hand2").pack(side="left", padx=10)
         tb.Button(bottom, text="🗑️ Delete", command=self.delete_selected_mod, bootstyle="danger", cursor="hand2").pack(side="left", padx=10)
+        tb.Button(bottom, text="📂 Open Mods Folder", command=self.open_mods_folder, bootstyle="info", cursor="hand2").pack(side="left", padx=10)
 
         # Groupe "Mods profile" dans topbar (avec message à droite)
         modpack_group = tb.Frame(topbar)
