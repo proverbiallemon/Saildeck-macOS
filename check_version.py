@@ -7,7 +7,12 @@ from tkinter import messagebox
 from version import __version__
 
 SETTINGS_FILE = "saildeck.data"
-GITHUB_API = "https://api.github.com/repos/Wolfeni/Saildeck/releases/latest"
+
+# Use appropriate repo based on platform
+if sys.platform == "darwin":
+    GITHUB_API = "https://api.github.com/repos/proverbiallemon/Saildeck-macOS/releases/latest"
+else:
+    GITHUB_API = "https://api.github.com/repos/Wolfeni/Saildeck/releases/latest"
 
 
 def read_settings() -> dict:
@@ -46,11 +51,30 @@ def get_latest_version_tag(data):
     return tag
 
 
-def find_exe_asset(data):
-    for asset in data.get("assets", []):
-        name = asset.get("name", "").lower()
-        if name.endswith(".exe"):
-            return asset.get("browser_download_url"), asset.get("name"), asset.get("size", 0)
+def find_downloadable_asset(data):
+    """Find appropriate downloadable asset for current platform."""
+    assets = data.get("assets", [])
+
+    if sys.platform == "darwin":
+        # Look for macOS assets: .dmg, .zip, or .app.zip
+        preferred_extensions = [".dmg", ".app.zip", ".zip"]
+        for ext in preferred_extensions:
+            for asset in assets:
+                name = asset.get("name", "").lower()
+                if name.endswith(ext) and ("mac" in name or "macos" in name or "darwin" in name or ext == ".dmg"):
+                    return asset.get("browser_download_url"), asset.get("name"), asset.get("size", 0)
+        # Fallback: any .zip file
+        for asset in assets:
+            name = asset.get("name", "").lower()
+            if name.endswith(".zip"):
+                return asset.get("browser_download_url"), asset.get("name"), asset.get("size", 0)
+    else:
+        # Windows: look for .exe
+        for asset in assets:
+            name = asset.get("name", "").lower()
+            if name.endswith(".exe"):
+                return asset.get("browser_download_url"), asset.get("name"), asset.get("size", 0)
+
     return None, None, None
 
 
@@ -78,8 +102,14 @@ def download_file_if_needed(url, dest_path, expected_size):
 
 
 def launch_new_executable(new_exe_path):
-    # Simply launch the new executable without trying to delete the old one
-    os.startfile(new_exe_path)
+    """Launch the new executable/app and exit."""
+    import subprocess
+    if sys.platform == "darwin":
+        # On macOS, open the downloaded file (will open .dmg or extract .zip)
+        subprocess.Popen(["open", new_exe_path])
+    else:
+        # Windows
+        os.startfile(new_exe_path)
     sys.exit(0)
 
 
@@ -106,9 +136,15 @@ def prompt_and_update_if_needed(parent=None):
     if not messagebox.askyesno("Saildeck Update", msg):
         return
 
-    url, filename, size = find_exe_asset(data)
+    url, filename, size = find_downloadable_asset(data)
     if not url or not filename:
-        messagebox.showerror("Error", "No .exe file found in the latest release.")
+        if sys.platform == "darwin":
+            messagebox.showinfo("Update Available",
+                f"Version {latest_version} is available.\n\n"
+                "Please visit the GitHub releases page to download:\n"
+                "https://github.com/proverbiallemon/Saildeck-macOS/releases")
+        else:
+            messagebox.showerror("Error", "No .exe file found in the latest release.")
         return
 
     try:
