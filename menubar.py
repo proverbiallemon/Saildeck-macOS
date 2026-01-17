@@ -18,87 +18,59 @@ def init_menubar(window):
     # === View menu ===
     view_menu = Menu(menubar, tearoff=0)
 
-    def set_theme_mode(mode):
-        theme_manager.set_theme_mode(mode)
-        _update_theme_menu_state()
-
-    def _update_theme_menu_state():
-        current_mode = theme_manager.get_theme_mode()
-        # Update checkmarks by rebuilding menu
-        _rebuild_view_menu()
-
     def _rebuild_view_menu():
         # Clear and rebuild view menu
         view_menu.delete(0, "end")
 
         current_mode = theme_manager.get_theme_mode()
-
-        # Theme mode submenu
-        theme_mode_menu = Menu(view_menu, tearoff=0)
-        theme_mode_menu.add_radiobutton(
-            label="Light",
-            command=lambda: set_theme_mode("light"),
-            variable=None
-        )
-        theme_mode_menu.add_radiobutton(
-            label="Dark",
-            command=lambda: set_theme_mode("dark"),
-            variable=None
-        )
-        theme_mode_menu.add_radiobutton(
-            label="System",
-            command=lambda: set_theme_mode("system"),
-            variable=None
-        )
-
-        # Add checkmarks manually
-        for i, mode in enumerate(["light", "dark", "system"]):
-            if mode == current_mode:
-                theme_mode_menu.entryconfigure(i, label=f"{'Light' if mode == 'light' else 'Dark' if mode == 'dark' else 'System'} *")
-
-        view_menu.add_cascade(label="Theme Mode", menu=theme_mode_menu)
-
-        # Light theme selection submenu
-        light_theme_menu = Menu(view_menu, tearoff=0)
         current_light = theme_manager.get_light_theme()
+        current_dark = theme_manager.get_dark_theme()
+        current_special = theme_manager.get_special_theme()
 
+        # Light themes submenu - clicking switches to light mode
+        light_theme_menu = Menu(view_menu, tearoff=0)
         for theme in LIGHT_THEMES:
             label = theme.capitalize()
-            if theme == current_light:
-                label += " *"
+            if current_mode == "light" and theme == current_light and not current_special:
+                label += " ✓"
             light_theme_menu.add_command(
                 label=label,
                 command=lambda t=theme: _set_light_theme(t)
             )
+        view_menu.add_cascade(label="Light Themes", menu=light_theme_menu)
 
-        view_menu.add_cascade(label="Light Theme", menu=light_theme_menu)
-
-        # Dark theme selection submenu
+        # Dark themes submenu - clicking switches to dark mode
         dark_theme_menu = Menu(view_menu, tearoff=0)
-        current_dark = theme_manager.get_dark_theme()
-
         for theme in DARK_THEMES:
             label = theme.capitalize()
-            if theme == current_dark:
-                label += " *"
+            if current_mode == "dark" and theme == current_dark and not current_special:
+                label += " ✓"
             dark_theme_menu.add_command(
                 label=label,
                 command=lambda t=theme: _set_dark_theme(t)
             )
+        view_menu.add_cascade(label="Dark Themes", menu=dark_theme_menu)
 
-        view_menu.add_cascade(label="Dark Theme", menu=dark_theme_menu)
+        view_menu.add_separator()
 
-        # Separator before special themes
+        # Follow System Theme option
+        system_label = "Follow System Theme"
+        if current_mode == "system" and not current_special:
+            system_label += " ✓"
+        view_menu.add_command(
+            label=system_label,
+            command=_set_system_mode
+        )
+
         view_menu.add_separator()
 
         # Special themes submenu
         special_theme_menu = Menu(view_menu, tearoff=0)
-        current_special = theme_manager.get_special_theme()
 
         # Option to disable special themes
         none_label = "None (Standard)"
         if current_special is None:
-            none_label += " *"
+            none_label += " ✓"
         special_theme_menu.add_command(
             label=none_label,
             command=lambda: _set_special_theme(None)
@@ -110,7 +82,7 @@ def init_menubar(window):
         for theme_key, theme_data in SPECIAL_THEMES.items():
             label = theme_data["name"]
             if theme_key == current_special:
-                label += " *"
+                label += " ✓"
             special_theme_menu.add_command(
                 label=label,
                 command=lambda t=theme_key: _set_special_theme(t)
@@ -119,11 +91,23 @@ def init_menubar(window):
         view_menu.add_cascade(label="Special Themes", menu=special_theme_menu)
 
     def _set_light_theme(theme):
+        # Clear special theme and switch to light mode with selected theme
+        theme_manager.set_special_theme(None)
         theme_manager.set_light_theme(theme)
+        theme_manager.set_theme_mode("light")
         _rebuild_view_menu()
 
     def _set_dark_theme(theme):
+        # Clear special theme and switch to dark mode with selected theme
+        theme_manager.set_special_theme(None)
         theme_manager.set_dark_theme(theme)
+        theme_manager.set_theme_mode("dark")
+        _rebuild_view_menu()
+
+    def _set_system_mode():
+        # Clear special theme and follow system
+        theme_manager.set_special_theme(None)
+        theme_manager.set_theme_mode("system")
         _rebuild_view_menu()
 
     def _set_special_theme(theme_key):

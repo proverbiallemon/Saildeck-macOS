@@ -58,64 +58,80 @@ def show_settings(parent):
     appearance_frame = tb.Frame(notebook, padding=15)
     notebook.add(appearance_frame, text="Appearance")
 
-    # Theme Mode
+    current_mode = settings["appearance"]["theme_mode"]
+    current_light = settings["appearance"]["light_theme"]
+    current_dark = settings["appearance"]["dark_theme"]
+    current_special = settings["appearance"].get("special_theme")
+
+    # Determine which theme is currently active
+    if current_special:
+        active_theme = None  # Special theme is active
+    elif current_mode == "light":
+        active_theme = ("light", current_light)
+    elif current_mode == "dark":
+        active_theme = ("dark", current_dark)
+    else:
+        active_theme = ("system", None)
+
+    # Variable to track selection
+    theme_var = tb.StringVar()
+    if active_theme == ("system", None):
+        theme_var.set("system")
+    elif active_theme and active_theme[0] == "light":
+        theme_var.set(f"light_{active_theme[1]}")
+    elif active_theme and active_theme[0] == "dark":
+        theme_var.set(f"dark_{active_theme[1]}")
+    else:
+        theme_var.set("")
+
+    # Light Themes
     tb.Label(
         appearance_frame,
-        text="Theme Mode",
+        text="Light Themes",
         font=(font, 10, "bold")
     ).pack(anchor="w", pady=(0, 5))
 
-    theme_mode_frame = tb.Frame(appearance_frame)
-    theme_mode_frame.pack(fill="x", pady=(0, 15))
+    light_frame = tb.Frame(appearance_frame)
+    light_frame.pack(fill="x", pady=(0, 10))
 
-    theme_mode_var = tb.StringVar(value=settings["appearance"]["theme_mode"])
-
-    for mode, label in [("light", "Light"), ("dark", "Dark"), ("system", "System")]:
+    for theme in LIGHT_THEMES:
         tb.Radiobutton(
-            theme_mode_frame,
-            text=label,
-            variable=theme_mode_var,
-            value=mode,
+            light_frame,
+            text=theme.capitalize(),
+            variable=theme_var,
+            value=f"light_{theme}",
             bootstyle="toolbutton"
-        ).pack(side="left", padx=(0, 10))
+        ).pack(side="left", padx=(0, 5))
 
-    # Light Theme Selection
+    # Dark Themes
     tb.Label(
         appearance_frame,
-        text="Light Theme",
+        text="Dark Themes",
         font=(font, 10, "bold")
-    ).pack(anchor="w", pady=(0, 5))
+    ).pack(anchor="w", pady=(10, 5))
 
-    light_theme_var = tb.StringVar(value=settings["appearance"]["light_theme"])
-    light_theme_combo = tb.Combobox(
-        appearance_frame,
-        textvariable=light_theme_var,
-        values=[t.capitalize() for t in LIGHT_THEMES],
-        state="readonly",
-        width=20
-    )
-    light_theme_combo.pack(anchor="w", pady=(0, 15))
-    # Set display value capitalized
-    light_theme_combo.set(settings["appearance"]["light_theme"].capitalize())
+    dark_frame = tb.Frame(appearance_frame)
+    dark_frame.pack(fill="x", pady=(0, 10))
 
-    # Dark Theme Selection
-    tb.Label(
-        appearance_frame,
-        text="Dark Theme",
-        font=(font, 10, "bold")
-    ).pack(anchor="w", pady=(0, 5))
+    for theme in DARK_THEMES:
+        tb.Radiobutton(
+            dark_frame,
+            text=theme.capitalize(),
+            variable=theme_var,
+            value=f"dark_{theme}",
+            bootstyle="toolbutton"
+        ).pack(side="left", padx=(0, 5))
 
-    dark_theme_var = tb.StringVar(value=settings["appearance"]["dark_theme"])
-    dark_theme_combo = tb.Combobox(
+    # Follow System Theme
+    tb.Separator(appearance_frame, orient="horizontal").pack(fill="x", pady=15)
+
+    tb.Radiobutton(
         appearance_frame,
-        textvariable=dark_theme_var,
-        values=[t.capitalize() for t in DARK_THEMES],
-        state="readonly",
-        width=20
-    )
-    dark_theme_combo.pack(anchor="w", pady=(0, 15))
-    # Set display value capitalized
-    dark_theme_combo.set(settings["appearance"]["dark_theme"].capitalize())
+        text="Follow System Theme (auto light/dark)",
+        variable=theme_var,
+        value="system",
+        bootstyle="toolbutton"
+    ).pack(anchor="w")
 
     # Preview note
     tb.Label(
@@ -123,7 +139,29 @@ def show_settings(parent):
         text="Theme changes apply immediately.",
         font=(font, 9),
         bootstyle="secondary"
-    ).pack(anchor="w", pady=(10, 0))
+    ).pack(anchor="w", pady=(15, 0))
+
+    def on_theme_change(*args):
+        """Apply theme changes immediately."""
+        value = theme_var.get()
+        if not value:
+            return
+
+        # Clear special theme when selecting a standard theme
+        theme_manager.set_special_theme(None)
+
+        if value == "system":
+            theme_manager.set_theme_mode("system")
+        elif value.startswith("light_"):
+            theme_name = value[6:]  # Remove "light_" prefix
+            theme_manager.set_light_theme(theme_name)
+            theme_manager.set_theme_mode("light")
+        elif value.startswith("dark_"):
+            theme_name = value[5:]  # Remove "dark_" prefix
+            theme_manager.set_dark_theme(theme_name)
+            theme_manager.set_theme_mode("dark")
+
+    theme_var.trace_add("write", on_theme_change)
 
     # ========== Special Themes Tab ==========
     special_frame = tb.Frame(notebook, padding=15)
@@ -249,9 +287,7 @@ def show_settings(parent):
                     theme_manager.set_setting(section, key, value)
 
             # Update UI
-            theme_mode_var.set("system")
-            light_theme_combo.set("Litera")
-            dark_theme_combo.set("Darkly")
+            theme_var.set("system")
             special_theme_var.set("none")
             var_skip_update.set(False)
             var_enable_altassets.set(True)
@@ -273,47 +309,18 @@ def show_settings(parent):
     button_frame = tb.Frame(win)
     button_frame.pack(fill="x", padx=10, pady=(0, 10))
 
-    def apply_and_close():
-        """Apply settings and close the window."""
-        # Apply appearance settings
-        new_mode = theme_mode_var.get()
-        new_light = light_theme_combo.get().lower()
-        new_dark = dark_theme_combo.get().lower()
-
-        theme_manager.set_setting("appearance", "theme_mode", new_mode)
-        theme_manager.set_setting("appearance", "light_theme", new_light)
-        theme_manager.set_setting("appearance", "dark_theme", new_dark)
-
-        # Apply behavior settings
+    def save_and_close():
+        """Save behavior settings and close the window."""
+        # Behavior settings need to be saved on close
         theme_manager.set_setting("behavior", "skip_update", var_skip_update.get())
         theme_manager.set_setting("behavior", "enable_altassets", var_enable_altassets.get())
         theme_manager.set_setting("behavior", "confirm_delete", var_confirm_delete.get())
-
-        # Apply theme if mode changed
-        theme_manager.set_theme_mode(new_mode)
-
         win.destroy()
-
-    def on_theme_change(*args):
-        """Apply theme changes immediately for preview and save."""
-        new_mode = theme_mode_var.get()
-        new_light = light_theme_combo.get().lower()
-        new_dark = dark_theme_combo.get().lower()
-
-        # Update and save all appearance settings using public API
-        theme_manager.set_setting("appearance", "light_theme", new_light)
-        theme_manager.set_setting("appearance", "dark_theme", new_dark)
-        theme_manager.set_theme_mode(new_mode)
-
-    # Bind changes to immediate preview
-    theme_mode_var.trace_add("write", on_theme_change)
-    light_theme_combo.bind("<<ComboboxSelected>>", on_theme_change)
-    dark_theme_combo.bind("<<ComboboxSelected>>", on_theme_change)
 
     tb.Button(
         button_frame,
         text="Close",
-        command=apply_and_close,
+        command=save_and_close,
         bootstyle="primary",
         width=10
     ).pack(side="right")
