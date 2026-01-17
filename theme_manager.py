@@ -148,13 +148,6 @@ def _migrate_settings(saved, defaults):
                     continue
                 if key == "special_theme" and value is not None and value not in SPECIAL_THEMES:
                     continue
-                if key == "crt_scanline_intensity":
-                    try:
-                        value = float(value)
-                        if not 0.0 <= value <= 1.0:
-                            continue
-                    except (ValueError, TypeError):
-                        continue
                 result["appearance"][key] = value
 
     return result
@@ -299,63 +292,6 @@ class ThemeManager:
             self._notify_callbacks()
         except Exception as e:
             print(f"[ThemeManager] Error applying theme '{theme_name}': {e}")
-
-    def _apply_special_theme_styles(self, special_theme_key):
-        """Apply custom styles for special themes like CRT."""
-        if special_theme_key not in SPECIAL_THEMES:
-            return
-
-        theme_data = SPECIAL_THEMES[special_theme_key]
-        colors = theme_data["colors"]
-        font = get_platform_font()
-
-        # Use monospace font for CRT themes
-        crt_font = "Courier" if platform.system() == "Darwin" else "Consolas"
-
-        # Configure widget styles with CRT colors
-        self._style.configure("TFrame", background=colors["bg"])
-        self._style.configure("TLabel", background=colors["bg"], foreground=colors["fg"])
-        self._style.configure("TButton",
-                              background=colors["secondary_bg"],
-                              foreground=colors["fg"],
-                              font=(crt_font, 10))
-        self._style.configure("Tiny.TButton", font=(crt_font, 8))
-
-        # Treeview styling
-        self._style.configure("Treeview",
-                              background=colors["bg"],
-                              foreground=colors["fg"],
-                              fieldbackground=colors["bg"],
-                              rowheight=28)
-        self._style.map("Treeview",
-                        background=[("selected", colors["secondary_bg"])],
-                        foreground=[("selected", colors["highlight"])])
-
-        # Entry and Combobox
-        self._style.configure("TEntry",
-                              fieldbackground=colors["secondary_bg"],
-                              foreground=colors["fg"])
-        self._style.configure("TCombobox",
-                              fieldbackground=colors["secondary_bg"],
-                              foreground=colors["fg"])
-
-        # Notebook tabs
-        self._style.configure("TNotebook", background=colors["bg"])
-        self._style.configure("TNotebook.Tab",
-                              background=colors["secondary_bg"],
-                              foreground=colors["fg"])
-
-        # Checkbutton
-        self._style.configure("TCheckbutton",
-                              background=colors["bg"],
-                              foreground=colors["fg"])
-
-        # Configure root window background
-        if self._root:
-            try:
-                self._root.configure(bg=colors["bg"])
-            except Exception:
-                pass
 
     def set_theme_mode(self, mode):
         """Set the theme mode ('light', 'dark', or 'system')."""

@@ -4,7 +4,6 @@ Provides a tabbed interface for configuring application settings.
 """
 
 import os
-import sys
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from theme_manager import (
@@ -316,6 +315,9 @@ def show_settings(parent):
         theme_manager.set_setting("behavior", "enable_altassets", var_enable_altassets.get())
         theme_manager.set_setting("behavior", "confirm_delete", var_confirm_delete.get())
         win.destroy()
+
+    # Handle window close button (X)
+    win.protocol("WM_DELETE_WINDOW", save_and_close)
 
     tb.Button(
         button_frame,
