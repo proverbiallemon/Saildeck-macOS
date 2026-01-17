@@ -76,8 +76,8 @@ def open_downloader_window(parent, mods_dir=None, on_download_complete=None):
             try:
                 img = Image.open(path).resize((40, 40), Image.LANCZOS)
                 logos[name] = ImageTk.PhotoImage(img)
-            except:
-                pass
+            except (IOError, OSError) as e:
+                print(f"[Downloader] Could not load logo {filename}: {e}")
 
     # Sidebar
     sidebar = tb.Frame(main_frame, width=60)
@@ -135,8 +135,10 @@ def open_downloader_window(parent, mods_dir=None, on_download_complete=None):
     scroll_wrapper = tb.Frame(content)
     scroll_wrapper.pack(fill="both", expand=True, pady=(10, 0))
 
-    # Canvas
-    canvas = tb.Canvas(scroll_wrapper, highlightthickness=0, bg='#1a1a1a')
+    # Canvas - use theme-aware background color
+    theme_manager = get_theme_manager()
+    colors = theme_manager.get_colors()
+    canvas = tb.Canvas(scroll_wrapper, highlightthickness=0, bg=colors.get("bg", "#1a1a1a"))
 
     # Scrollbar
     vsb = tb.Scrollbar(scroll_wrapper, orient="vertical", command=canvas.yview)
@@ -182,8 +184,8 @@ def open_downloader_window(parent, mods_dir=None, on_download_complete=None):
             canvas.unbind_all("<MouseWheel>")
             canvas.unbind_all("<Button-4>")
             canvas.unbind_all("<Button-5>")
-        except:
-            pass
+        except Exception:
+            pass  # Widget may already be destroyed
 
     canvas.bind("<Enter>", lambda e: bind_wheel())
     canvas.bind("<Leave>", lambda e: unbind_wheel())

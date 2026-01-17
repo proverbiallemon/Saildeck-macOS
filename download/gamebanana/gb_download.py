@@ -3,6 +3,8 @@ import re
 import shutil
 import tempfile
 import zipfile
+import hashlib
+import uuid
 import requests
 
 # Try to import py7zr for 7z support
@@ -50,19 +52,44 @@ def download_file(url, dest_path, progress_callback=None):
         return False
 
 
+def _is_path_safe(member_path, dest_dir):
+    """Check if extracted path stays within destination directory (prevents Zip Slip)."""
+    # Resolve the final absolute path
+    abs_dest = os.path.abspath(dest_dir)
+    abs_member = os.path.abspath(os.path.join(dest_dir, member_path))
+    # Ensure the resolved path starts with destination directory
+    return abs_member.startswith(abs_dest + os.sep) or abs_member == abs_dest
+
+
+def _safe_extract_zip(archive_path, dest_dir):
+    """Safely extract a ZIP file, validating paths to prevent Zip Slip attacks."""
+    with zipfile.ZipFile(archive_path, 'r') as zf:
+        for member in zf.namelist():
+            if not _is_path_safe(member, dest_dir):
+                raise ValueError(f"Attempted path traversal in archive: {member}")
+        zf.extractall(dest_dir)
+
+
+def _safe_extract_7z(archive_path, dest_dir):
+    """Safely extract a 7z file, validating paths to prevent path traversal attacks."""
+    with py7zr.SevenZipFile(archive_path, 'r') as archive:
+        for name in archive.getnames():
+            if not _is_path_safe(name, dest_dir):
+                raise ValueError(f"Attempted path traversal in archive: {name}")
+        archive.extractall(dest_dir)
+
+
 def extract_archive(archive_path, dest_dir):
-    """Extract an archive (ZIP or 7z)."""
+    """Extract an archive (ZIP or 7z) with path traversal protection."""
     filename_lower = archive_path.lower()
 
     try:
         if filename_lower.endswith('.zip'):
-            with zipfile.ZipFile(archive_path, 'r') as zf:
-                zf.extractall(dest_dir)
+            _safe_extract_zip(archive_path, dest_dir)
             return True
 
         elif filename_lower.endswith('.7z') and HAS_7Z:
-            with py7zr.SevenZipFile(archive_path, 'r') as archive:
-                archive.extractall(dest_dir)
+            _safe_extract_7z(archive_path, dest_dir)
             return True
 
         elif filename_lower.endswith('.7z') and not HAS_7Z:
@@ -76,13 +103,15 @@ def extract_archive(archive_path, dest_dir):
         else:
             # Try as zip
             try:
-                with zipfile.ZipFile(archive_path, 'r') as zf:
-                    zf.extractall(dest_dir)
+                _safe_extract_zip(archive_path, dest_dir)
                 return True
             except zipfile.BadZipFile:
                 print(f"[Download] Unknown archive format: {archive_path}")
                 return False
 
+    except ValueError as e:
+        print(f"[Download] Security error: {e}")
+        return False
     except Exception as e:
         print(f"[Download] Error extracting {archive_path}: {e}")
         return False
@@ -97,6 +126,42 @@ def find_mod_files(directory):
             if ext in MOD_EXTENSIONS:
                 mod_files.append(os.path.join(root, filename))
     return mod_files
+
+
+def verify_md5(file_path, expected_md5):
+    """Verify file MD5 checksum.
+
+    Returns True if checksum matches or if no expected checksum provided.
+    """
+    if not expected_md5:
+        return True  # No checksum to verify
+
+    md5 = hashlib.md5()
+    with open(file_path, 'rb') as f:
+        for chunk in iter(lambda: f.read(8192), b''):
+            md5.update(chunk)
+
+    return md5.hexdigest().lower() == expected_md5.lower()
+
+
+def is_file_safe(file_info):
+    """Check if a file is safe based on GameBanana analysis result.
+
+    Returns (is_safe, reason) tuple.
+    """
+    result = file_info.get("analysis_result", "")
+    if not result:
+        return True, None
+
+    # GameBanana marks unsafe files with specific indicators
+    result_lower = result.lower()
+    unsafe_indicators = ["malware", "suspicious", "infected", "virus", "trojan"]
+
+    for indicator in unsafe_indicators:
+        if indicator in result_lower:
+            return False, f"File flagged as potentially unsafe: {result}"
+
+    return True, None
 
 
 def download_and_install_mod(mod, file_info, mods_dir, callbacks=None):
@@ -116,6 +181,7 @@ def download_and_install_mod(mod, file_info, mods_dir, callbacks=None):
 
     download_url = file_info.get('download_url')
     filename = file_info.get('filename', 'mod_download')
+    expected_md5 = file_info.get('md5', '')
     mod_name = mod.get('name', 'Unknown Mod')
 
     if not download_url:
@@ -124,17 +190,21 @@ def download_and_install_mod(mod, file_info, mods_dir, callbacks=None):
         on_complete(False, msg)
         return False, msg
 
-    # Create mod subfolder
+    # Check if file is safe according to GameBanana analysis
+    safe, reason = is_file_safe(file_info)
+    if not safe:
+        on_error(reason)
+        on_complete(False, reason)
+        return False, reason
+
+    # Create mod subfolder with atomic naming to avoid race conditions
     folder_name = sanitize_folder_name(mod_name)
     mod_folder = os.path.join(mods_dir, folder_name)
 
-    # Handle existing folder
+    # Handle existing folder atomically using unique naming to avoid race conditions
     if os.path.exists(mod_folder):
-        # Add number suffix if folder exists
-        counter = 1
-        while os.path.exists(f"{mod_folder}_{counter}"):
-            counter += 1
-        mod_folder = f"{mod_folder}_{counter}"
+        unique_suffix = str(uuid.uuid4())[:8]
+        mod_folder = f"{mod_folder}_{unique_suffix}"
 
     temp_dir = tempfile.mkdtemp(prefix="saildeck_")
 
@@ -148,6 +218,15 @@ def download_and_install_mod(mod, file_info, mods_dir, callbacks=None):
             on_error(msg)
             on_complete(False, msg)
             return False, msg
+
+        # Verify MD5 checksum if provided
+        if expected_md5:
+            on_status("Verifying checksum...")
+            if not verify_md5(archive_path, expected_md5):
+                msg = "Checksum verification failed - file may be corrupted"
+                on_error(msg)
+                on_complete(False, msg)
+                return False, msg
 
         # Check if it's already a mod file (not an archive)
         ext = os.path.splitext(filename.lower())[1]

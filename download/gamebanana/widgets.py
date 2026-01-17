@@ -151,9 +151,10 @@ def render_mod_card(parent, mod: dict, mods_dir=None, on_download_complete=None)
                 def update_progress(downloaded, total):
                     if total > 0:
                         pct = (downloaded / total) * 100
-                        frame.after(0, lambda: progress_bar.config(value=pct))
-                        frame.after(0, lambda: status_label.config(
-                            text=f"Downloading: {format_filesize(downloaded)} / {format_filesize(total)}"
+                        # Capture values to avoid thread-unsafe closure
+                        frame.after(0, lambda v=pct: progress_bar.config(value=v))
+                        frame.after(0, lambda d=downloaded, t=total: status_label.config(
+                            text=f"Downloading: {format_filesize(d)} / {format_filesize(t)}"
                         ))
 
                 def update_status(msg):
