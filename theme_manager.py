@@ -24,40 +24,51 @@ THEME_PAIRS = {
 LIGHT_THEMES = list(THEME_PAIRS.keys())
 DARK_THEMES = list(THEME_PAIRS.values())
 
-# Special themes that apply custom styling on top of a base theme
+# Special themes - these are actual ttkbootstrap theme definitions
+# Format follows ttkbootstrap's theme structure
 SPECIAL_THEMES = {
     "crt_green": {
         "name": "CRT Green",
-        "base_theme": "darkly",
+        "type": "dark",
         "colors": {
+            "primary": "#00FF41",
+            "secondary": "#0A1F0A",
+            "success": "#00FF41",
+            "info": "#39FF14",
+            "warning": "#00994D",
+            "danger": "#FF0000",
+            "light": "#00FF41",
+            "dark": "#0D0208",
             "bg": "#0D0208",
             "fg": "#00FF41",
-            "secondary_bg": "#0A1F0A",
-            "accent": "#00FF41",
-            "link": "#39FF14",
-            "muted": "#00994D",
+            "selectbg": "#0A1F0A",
+            "selectfg": "#00FF41",
             "border": "#003300",
-            "tooltip_bg": "#0A1F0A",
-            "tooltip_fg": "#00FF41",
-            "highlight": "#00FF41",
-            "glow": "#00FF4180",
+            "inputfg": "#00FF41",
+            "inputbg": "#0A1F0A",
+            "active": "#001A00",
         }
     },
     "crt_amber": {
         "name": "CRT Amber",
-        "base_theme": "darkly",
+        "type": "dark",
         "colors": {
+            "primary": "#FFB000",
+            "secondary": "#1A0F00",
+            "success": "#FFB000",
+            "info": "#FFC933",
+            "warning": "#996600",
+            "danger": "#FF0000",
+            "light": "#FFB000",
+            "dark": "#0D0800",
             "bg": "#0D0800",
             "fg": "#FFB000",
-            "secondary_bg": "#1A0F00",
-            "accent": "#FFB000",
-            "link": "#FFC933",
-            "muted": "#996600",
+            "selectbg": "#1A0F00",
+            "selectfg": "#FFB000",
             "border": "#332200",
-            "tooltip_bg": "#1A0F00",
-            "tooltip_fg": "#FFB000",
-            "highlight": "#FFB000",
-            "glow": "#FFB00080",
+            "inputfg": "#FFB000",
+            "inputbg": "#1A0F00",
+            "active": "#0A0500",
         }
     },
 }
@@ -209,17 +220,41 @@ class ThemeManager:
         import ttkbootstrap as tb
         self._style = tb.Style()
 
+        # Register custom CRT themes with ttkbootstrap
+        self._register_special_themes()
+
         theme_name = self.get_effective_theme()
         self._apply_theme(theme_name)
+
+    def _register_special_themes(self):
+        """Register special themes (CRT, etc.) with ttkbootstrap."""
+        if self._style is None:
+            return
+
+        from ttkbootstrap.style import ThemeDefinition
+
+        for theme_key, theme_data in SPECIAL_THEMES.items():
+            try:
+                # Check if theme already registered
+                if theme_key not in self._style.theme_names():
+                    theme_def = ThemeDefinition(
+                        name=theme_key,
+                        themetype=theme_data["type"],
+                        colors=theme_data["colors"]
+                    )
+                    self._style.register_theme(theme_def)
+            except Exception as e:
+                print(f"[ThemeManager] Failed to register theme '{theme_key}': {e}")
 
     def get_effective_theme(self):
         """Get the theme name that should currently be applied."""
         appearance = self._settings.get("appearance", DEFAULT_SETTINGS["appearance"])
 
-        # Check for special theme first
+        # Check for special theme first - return the special theme name directly
+        # since we register them as actual ttkbootstrap themes
         special_theme = appearance.get("special_theme")
         if special_theme and special_theme in SPECIAL_THEMES:
-            return SPECIAL_THEMES[special_theme]["base_theme"]
+            return special_theme
 
         mode = appearance.get("theme_mode", "system")
         light_theme = appearance.get("light_theme", "litera")
@@ -239,19 +274,26 @@ class ThemeManager:
             return
 
         try:
+            # Ensure special themes are registered before use
+            if theme_name in SPECIAL_THEMES and theme_name not in self._style.theme_names():
+                self._register_special_themes()
+
             self._style.theme_use(theme_name)
             self._current_theme = theme_name
 
             # Configure common styles
             font = get_platform_font()
-            self._style.configure("TButton", font=(font, 10))
-            self._style.configure("Treeview", rowheight=28)
-            self._style.configure("Tiny.TButton", font=(font, 8))
 
-            # Apply special theme styling if active
-            special_theme = self.get_special_theme()
-            if special_theme and special_theme in SPECIAL_THEMES:
-                self._apply_special_theme_styles(special_theme)
+            # Use monospace font for CRT themes
+            if theme_name in SPECIAL_THEMES:
+                crt_font = "SF Mono" if platform.system() == "Darwin" else "Consolas"
+                self._style.configure("TButton", font=(crt_font, 10))
+                self._style.configure("Tiny.TButton", font=(crt_font, 8))
+            else:
+                self._style.configure("TButton", font=(font, 10))
+                self._style.configure("Tiny.TButton", font=(font, 8))
+
+            self._style.configure("Treeview", rowheight=28)
 
             if self._root:
                 self._root.update_idletasks()
@@ -387,7 +429,19 @@ class ThemeManager:
         # Check for special theme first
         special_theme = self.get_special_theme()
         if special_theme and special_theme in SPECIAL_THEMES:
-            return SPECIAL_THEMES[special_theme]["colors"].copy()
+            theme_colors = SPECIAL_THEMES[special_theme]["colors"]
+            # Map ttkbootstrap color keys to our expected keys
+            return {
+                "bg": theme_colors["bg"],
+                "fg": theme_colors["fg"],
+                "secondary_bg": theme_colors["secondary"],
+                "accent": theme_colors["primary"],
+                "link": theme_colors["info"],
+                "muted": theme_colors["warning"],
+                "border": theme_colors["border"],
+                "tooltip_bg": theme_colors["inputbg"],
+                "tooltip_fg": theme_colors["inputfg"],
+            }
 
         is_light = self.is_light_mode()
 
