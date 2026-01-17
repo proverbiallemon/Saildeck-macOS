@@ -89,8 +89,9 @@ class ModManagerGUI(tb.Window):
             style.configure("TButton", font=("Segoe UI", 10))
             style.configure("Treeview", rowheight=28)
             self.update_idletasks()
-        except Exception as e:
-            print(f"[!] Error reloading theme: {e}")
+        except Exception:
+            # Theme reload can fail on macOS with certain widgets - non-fatal
+            pass
 
     def create_widgets(self):
         top_container = tb.Frame(self)

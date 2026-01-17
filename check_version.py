@@ -39,6 +39,12 @@ def get_latest_release_info():
         response = requests.get(GITHUB_API, headers=headers, timeout=5)
         response.raise_for_status()
         return response.json()
+    except requests.exceptions.HTTPError as e:
+        # 404 is expected when no releases exist yet - silently ignore
+        if e.response is not None and e.response.status_code == 404:
+            return None
+        print(f"[!] Failed to fetch release info: {e}")
+        return None
     except Exception as e:
         print(f"[!] Failed to fetch release info: {e}")
         return None
