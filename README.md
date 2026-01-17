@@ -85,6 +85,12 @@ pip install -r requirements.txt
 
 Saildeck lets you activate and deactivate mods for Ship of Harkinian. It is a spiritual successor to Shiploader with support for `.otr` and `.o2r` files.
 
+## Documentation
+
+- [macOS Setup Guide](docs/MACOS_SETUP.md) - Detailed installation and troubleshooting
+- [Changelog](CHANGELOG.md) - Version history and changes
+- [Translations](TRANSLATIONS.md) - French to English translation reference
+
 ## License
 
 GPL-3.0 - Same as the original Saildeck. See [LICENSE](LICENSE) for details.
