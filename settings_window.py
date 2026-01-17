@@ -250,14 +250,14 @@ def show_settings(parent):
         win.destroy()
 
     def on_theme_change(*args):
-        """Apply theme changes immediately for preview."""
+        """Apply theme changes immediately for preview and save."""
         new_mode = theme_mode_var.get()
         new_light = light_theme_combo.get().lower()
         new_dark = dark_theme_combo.get().lower()
 
-        # Temporarily set and apply
-        theme_manager._settings["appearance"]["light_theme"] = new_light
-        theme_manager._settings["appearance"]["dark_theme"] = new_dark
+        # Update and save all appearance settings using public API
+        theme_manager.set_setting("appearance", "light_theme", new_light)
+        theme_manager.set_setting("appearance", "dark_theme", new_dark)
         theme_manager.set_theme_mode(new_mode)
 
     # Bind changes to immediate preview

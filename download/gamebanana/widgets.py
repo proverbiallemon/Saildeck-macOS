@@ -1,14 +1,18 @@
 import webbrowser
 import requests
 import os
-import sys
 from PIL import Image, ImageTk
 from io import BytesIO
 import ttkbootstrap as tb
 
-# Import theme_manager from parent directory
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from theme_manager import get_platform_font
+# Import theme_manager from parent package
+try:
+    from theme_manager import get_platform_font
+except ImportError:
+    # Fallback for when running from different working directories
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    from theme_manager import get_platform_font
 
 
 def render_mod_card(parent, mod: dict):

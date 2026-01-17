@@ -18,12 +18,6 @@ def init_menubar(window):
     # === View menu ===
     view_menu = Menu(menubar, tearoff=0)
 
-    # Theme mode submenu
-    theme_mode_menu = Menu(view_menu, tearoff=0)
-
-    # Variables for radio buttons
-    theme_mode_var = Menu(theme_mode_menu)
-
     def set_theme_mode(mode):
         theme_manager.set_theme_mode(mode)
         _update_theme_menu_state()

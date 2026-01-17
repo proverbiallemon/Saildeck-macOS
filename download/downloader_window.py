@@ -1,5 +1,4 @@
 import os
-import sys
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 from PIL import Image, ImageTk
@@ -9,9 +8,14 @@ from download.gamebanana.api import get_soh_mod_ids
 from download.gamebanana.scraper import get_mod_details_from_id
 from download.gamebanana.widgets import render_mod_card
 
-# Import theme_manager from parent directory
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-from theme_manager import get_theme_manager, get_platform_font
+# Import theme_manager from parent package
+try:
+    from theme_manager import get_theme_manager, get_platform_font
+except ImportError:
+    # Fallback for when running from different working directories
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from theme_manager import get_theme_manager, get_platform_font
 
 # -------- Tooltip minimal --------
 class ToolTip:

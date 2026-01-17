@@ -58,8 +58,8 @@ def load_settings():
                 saved = json.load(f)
             # Migrate old flat settings to new structure
             settings = _migrate_settings(saved, settings)
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[ThemeManager] Warning: Could not load settings: {e}")
 
     return settings
 
@@ -88,7 +88,15 @@ def _migrate_settings(saved, defaults):
     if "appearance" in saved:
         for key in result["appearance"]:
             if key in saved["appearance"]:
-                result["appearance"][key] = saved["appearance"][key]
+                value = saved["appearance"][key]
+                # Validate theme names to prevent invalid themes from config
+                if key == "light_theme" and value not in LIGHT_THEMES:
+                    continue
+                if key == "dark_theme" and value not in DARK_THEMES:
+                    continue
+                if key == "theme_mode" and value not in ("light", "dark", "system"):
+                    continue
+                result["appearance"][key] = value
 
     return result
 
@@ -121,7 +129,7 @@ def get_platform_font():
     elif system == "Windows":
         return "Segoe UI"
     else:  # Linux and others
-        return "Ubuntu"
+        return "DejaVu Sans"  # More universally available than Ubuntu font
 
 
 class ThemeManager:

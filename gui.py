@@ -14,7 +14,7 @@ from download.downloader_window import open_downloader_window
 from save_modpacks import save_modpack, list_modpacks, load_modpack
 from delete import delete_mod
 from platform_handler import get_platform_handler
-from theme_manager import init_theme_manager, get_theme_manager, get_platform_font
+from theme_manager import get_theme_manager, get_platform_font
 
 if sys.platform == "win32":
     import ctypes
@@ -40,8 +40,10 @@ class ModManagerGUI(tb.Window):
         initial_theme = self.theme_manager.get_effective_theme()
         super().__init__(themename=initial_theme)
 
-        # Initialize theme manager with this window
-        init_theme_manager(self)
+        # Set root window and current theme without re-applying (already applied by super().__init__)
+        self.theme_manager._root = self
+        self.theme_manager._style = tb.Style()
+        self.theme_manager._current_theme = initial_theme
 
         self.title("Saildeck — Mod manager for Ship of Harkinian")
         self.geometry("700x600")
