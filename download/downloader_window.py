@@ -8,6 +8,15 @@ from download.gamebanana.api import get_soh_mod_ids
 from download.gamebanana.scraper import get_mod_details_from_id
 from download.gamebanana.widgets import render_mod_card
 
+# Import theme_manager from parent package
+try:
+    from theme_manager import get_theme_manager, get_platform_font
+except ImportError:
+    # Fallback for when running from different working directories
+    import sys
+    sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    from theme_manager import get_theme_manager, get_platform_font
+
 # -------- Tooltip minimal --------
 class ToolTip:
     def __init__(self, widget, text):
@@ -25,14 +34,20 @@ class ToolTip:
         self.tip_window = tw = tb.Toplevel(self.widget)
         tw.wm_overrideredirect(True)
         tw.attributes("-topmost", True)
+
+        # Get theme-aware colors
+        theme_manager = get_theme_manager()
+        colors = theme_manager.get_colors()
+        font = get_platform_font()
+
         self.label = tb.Label(
             tw,
             text=self.text,
-            background="#2b2b2b",
-            foreground="#ffffff",
+            background=colors["tooltip_bg"],
+            foreground=colors["tooltip_fg"],
             relief="solid",
             borderwidth=1,
-            font=("Segoe UI", 9),
+            font=(font, 9),
             padding=5
         )
         self.label.pack()
@@ -51,6 +66,8 @@ class ToolTip:
 
 # -------- Fenêtre principale --------
 def open_downloader_window(parent):
+    font = get_platform_font()
+
     window = tb.Toplevel(parent)
     window.title("Download Mods")
     window.geometry("700x450")
@@ -68,7 +85,7 @@ def open_downloader_window(parent):
 
     assets_dir = os.path.join(root_dir, "assets")
 
-    # 🖼️ Logos
+    # Logos
     logos = {}
     logo_files = {
         "Gamebanana": "gb_logo.png",
@@ -83,11 +100,11 @@ def open_downloader_window(parent):
         else:
             print(f"[!] Logo manquant : {filename}")
 
-    # 🟦 Barre latérale
+    # Sidebar
     sidebar = tb.Frame(main_frame, width=150)
     sidebar.pack(side="left", fill="y", padx=5, pady=5)
 
-    tb.Label(sidebar, text="Mods websites", font=("Segoe UI", 11, "bold")).pack(pady=(0, 10))
+    tb.Label(sidebar, text="Mods websites", font=(font, 11, "bold")).pack(pady=(0, 10))
 
     selected_source = {"value": None}
     mod_source_buttons = {}
@@ -119,7 +136,7 @@ def open_downloader_window(parent):
 
             threading.Thread(target=threaded_load_mods, daemon=True).start()
         else:
-            tb.Label(dynamic_frame, text=f"{name} - coming soon", font=("Segoe UI", 10)).pack(pady=20)
+            tb.Label(dynamic_frame, text=f"{name} - coming soon", font=(font, 10)).pack(pady=20)
 
     for name in logo_files:
         logo = logos.get(name)
@@ -141,4 +158,4 @@ def open_downloader_window(parent):
     separator.pack(side="left", fill="y", padx=0, pady=10)
 
     # Message initial
-    tb.Label(dynamic_frame, text="Select mods website", font=("Segoe UI", 10)).pack(pady=20)
+    tb.Label(dynamic_frame, text="Select mods website", font=(font, 10)).pack(pady=20)

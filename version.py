@@ -1,1 +1,1 @@
-__version__ = "1.1.0-macos-beta.1"
+__version__ = "1.2.0-macos-beta.1"

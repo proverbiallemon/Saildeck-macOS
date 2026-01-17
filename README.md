@@ -29,6 +29,15 @@ This fork is released under the same **GPL-3.0 license** as the original.
 - Uses `open` command instead of `os.startfile()` for Finder integration
 - Fixed Windows-only dependencies (`pywin32-ctypes` now conditional)
 
+### UI Modernization (v1.2.0)
+- **Light/Dark/System theme modes** - Follows your system appearance automatically
+- **8 theme options** - 4 light themes (Litera, Flatly, Cosmo, Minty) and 4 dark themes (Darkly, Superhero, Cyborg, Solar)
+- **Redesigned Settings window** - Tabbed interface with Appearance, Behavior, and Advanced sections
+- **Resizable main window** - Window can now be resized (minimum 700x550)
+- **Cross-platform fonts** - Automatically uses SF Pro Text on macOS, Segoe UI on Windows
+- **View menu** - Quick access to theme switching from the menu bar
+- **Confirm before delete option** - Optional confirmation dialog when deleting mods
+
 ### Additional Features
 - **Open Mods Folder button** - Quick access to your mods directory from the main UI
 - All strings translated to English (original was French)
@@ -83,6 +92,8 @@ pip install -r requirements.txt
 - Save/Load mod profiles
 - Export/Import modpacks as ZIP
 - Auto-enable AltAssets when mods are active
+- Light/Dark/System theme modes with 8 theme variants
+- Customizable settings via tabbed Settings window
 
 ## Status
 
