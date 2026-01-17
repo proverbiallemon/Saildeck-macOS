@@ -30,11 +30,10 @@ This project is a fork of [Saildeck by Wolfeni](https://github.com/Wolfeni/Saild
   - SF Pro Text on macOS
   - Segoe UI on Windows
   - DejaVu Sans on Linux
-- **CRT Retro Themes** (`crt_effects.py`)
+- **CRT Retro Themes**
   - CRT Green: Classic green phosphor terminal aesthetic (#00FF41)
   - CRT Amber: Warm amber phosphor aesthetic (#FFB000)
-  - Dedicated CRT Effects tab in Settings
-  - Scanline and flicker effect options (visual settings preserved for future enhancements)
+  - Monospace fonts (SF Mono/Consolas) for authentic CRT look
 
 ### Changed
 - `gui.py` - Integrated theme manager, window now resizable (min 700x550)
@@ -49,8 +48,7 @@ This project is a fork of [Saildeck by Wolfeni](https://github.com/Wolfeni/Saild
 ```json
   {
     "appearance": {
-      "theme_mode", "light_theme", "dark_theme",
-      "special_theme", "crt_scanlines", "crt_scanline_intensity", "crt_flicker"
+      "theme_mode", "light_theme", "dark_theme", "special_theme"
     },
     "behavior": { "skip_update", "enable_altassets", "confirm_delete" }
   }
