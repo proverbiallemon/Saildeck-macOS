@@ -51,6 +51,7 @@ This project is a fork of [Saildeck by Wolfeni](https://github.com/Wolfeni/Saild
 - Hardcoded colors in About window now theme-aware
 - Hardcoded tooltip colors now theme-aware
 - All "Segoe UI" fonts replaced with platform-appropriate fonts
+- Light mode theme switching not applying changes (is_light_mode now checks mode setting)
 
 ---
 

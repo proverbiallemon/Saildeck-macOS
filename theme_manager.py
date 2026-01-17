@@ -227,8 +227,14 @@ class ThemeManager:
             self._apply_theme(theme_name)
 
     def is_light_mode(self):
-        """Check if the current effective theme is a light theme."""
-        return self._current_theme in LIGHT_THEMES
+        """Check if we should be showing a light theme based on mode setting."""
+        mode = self.get_theme_mode()
+        if mode == "light":
+            return True
+        elif mode == "dark":
+            return False
+        else:  # system
+            return get_system_theme() == "light"
 
     def get_theme_mode(self):
         """Get the current theme mode setting."""
