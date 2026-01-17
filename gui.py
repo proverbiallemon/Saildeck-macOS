@@ -14,6 +14,7 @@ from download.downloader_window import open_downloader_window
 from save_modpacks import save_modpack, list_modpacks, load_modpack
 from delete import delete_mod
 from platform_handler import get_platform_handler
+from theme_manager import init_theme_manager, get_theme_manager, get_platform_font
 
 if sys.platform == "win32":
     import ctypes
@@ -34,10 +35,18 @@ def normalize_path(path):
 
 class ModManagerGUI(tb.Window):
     def __init__(self, game_dir):
-        super().__init__(themename="darkly")
+        # Get initial theme from theme manager
+        self.theme_manager = get_theme_manager()
+        initial_theme = self.theme_manager.get_effective_theme()
+        super().__init__(themename=initial_theme)
+
+        # Initialize theme manager with this window
+        init_theme_manager(self)
+
         self.title("Saildeck — Mod manager for Ship of Harkinian")
         self.geometry("700x600")
-        self.resizable(False, False)
+        self.minsize(700, 550)
+        self.resizable(True, True)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
 
         icon_path = os.path.join(os.path.dirname(__file__), "icon", "icon.ico")
@@ -85,9 +94,12 @@ class ModManagerGUI(tb.Window):
     def force_style_reload(self):
         try:
             style = tb.Style()
-            style.theme_use("darkly")
-            style.configure("TButton", font=("Segoe UI", 10))
+            current_theme = self.theme_manager.get_current_theme() or self.theme_manager.get_effective_theme()
+            style.theme_use(current_theme)
+            font = get_platform_font()
+            style.configure("TButton", font=(font, 10))
             style.configure("Treeview", rowheight=28)
+            style.configure("Tiny.TButton", font=(font, 8))
             self.update_idletasks()
         except Exception:
             # Theme reload can fail on macOS with certain widgets - non-fatal
@@ -138,7 +150,8 @@ class ModManagerGUI(tb.Window):
         self.modpack_combobox.pack(side="left", padx=(0, 5))
 
         style = tb.Style()
-        style.configure("Tiny.TButton", font=("Segoe UI", 8))
+        font = get_platform_font()
+        style.configure("Tiny.TButton", font=(font, 8))
 
         save_btn = tb.Button(profile_row, text="Save", command=self.prompt_and_save_modpack,
                             bootstyle="secondary", cursor="hand2", width=6, style="Tiny.TButton")
@@ -161,7 +174,7 @@ class ModManagerGUI(tb.Window):
         self.tree.bind("<<TreeviewClose>>", self.on_tree_open_close)
 
         # Barre d'état (status bar) **en bas du bottom_container**
-        status_bar = tb.Label(bottom_container, textvariable=self.status_var, anchor="w", font=("Segoe UI", 9), padding=5)
+        status_bar = tb.Label(bottom_container, textvariable=self.status_var, anchor="w", font=(get_platform_font(), 9), padding=5)
         status_bar.pack(side="bottom", fill="x")
 
         self.refresh_modpack_list()
@@ -508,7 +521,8 @@ class ModManagerGUI(tb.Window):
         downloader_window.geometry("500x400")
         downloader_window.resizable(False, False)
 
-        label = tb.Label(downloader_window, text="Mod management (from GameBanana...)", font=("Segoe UI", 12))
+        font = get_platform_font()
+        label = tb.Label(downloader_window, text="Mod management (from GameBanana...)", font=(font, 12))
         label.pack(pady=20)
 
         tb.Label(downloader_window, text="Feature under development").pack(pady=10)

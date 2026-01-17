@@ -2,15 +2,110 @@ from tkinter import Menu
 import about
 import settings_window
 import export_modpacks
+from theme_manager import get_theme_manager, LIGHT_THEMES, DARK_THEMES
+
 
 def init_menubar(window):
     menubar = Menu(window)
+    theme_manager = get_theme_manager()
 
     # === Saildeck menu ===
     saildeck_menu = Menu(menubar, tearoff=0)
     saildeck_menu.add_command(label="Open mods folder", command=window.open_mods_folder)
     saildeck_menu.add_command(label="Refresh mods list", command=window.refresh_mod_list)
     menubar.add_cascade(label="Saildeck", menu=saildeck_menu)
+
+    # === View menu ===
+    view_menu = Menu(menubar, tearoff=0)
+
+    # Theme mode submenu
+    theme_mode_menu = Menu(view_menu, tearoff=0)
+
+    # Variables for radio buttons
+    theme_mode_var = Menu(theme_mode_menu)
+
+    def set_theme_mode(mode):
+        theme_manager.set_theme_mode(mode)
+        _update_theme_menu_state()
+
+    def _update_theme_menu_state():
+        current_mode = theme_manager.get_theme_mode()
+        # Update checkmarks by rebuilding menu
+        _rebuild_view_menu()
+
+    def _rebuild_view_menu():
+        # Clear and rebuild view menu
+        view_menu.delete(0, "end")
+
+        current_mode = theme_manager.get_theme_mode()
+
+        # Theme mode submenu
+        theme_mode_menu = Menu(view_menu, tearoff=0)
+        theme_mode_menu.add_radiobutton(
+            label="Light",
+            command=lambda: set_theme_mode("light"),
+            variable=None
+        )
+        theme_mode_menu.add_radiobutton(
+            label="Dark",
+            command=lambda: set_theme_mode("dark"),
+            variable=None
+        )
+        theme_mode_menu.add_radiobutton(
+            label="System",
+            command=lambda: set_theme_mode("system"),
+            variable=None
+        )
+
+        # Add checkmarks manually
+        for i, mode in enumerate(["light", "dark", "system"]):
+            if mode == current_mode:
+                theme_mode_menu.entryconfigure(i, label=f"{'Light' if mode == 'light' else 'Dark' if mode == 'dark' else 'System'} *")
+
+        view_menu.add_cascade(label="Theme Mode", menu=theme_mode_menu)
+
+        # Light theme selection submenu
+        light_theme_menu = Menu(view_menu, tearoff=0)
+        current_light = theme_manager.get_light_theme()
+
+        for theme in LIGHT_THEMES:
+            label = theme.capitalize()
+            if theme == current_light:
+                label += " *"
+            light_theme_menu.add_command(
+                label=label,
+                command=lambda t=theme: _set_light_theme(t)
+            )
+
+        view_menu.add_cascade(label="Light Theme", menu=light_theme_menu)
+
+        # Dark theme selection submenu
+        dark_theme_menu = Menu(view_menu, tearoff=0)
+        current_dark = theme_manager.get_dark_theme()
+
+        for theme in DARK_THEMES:
+            label = theme.capitalize()
+            if theme == current_dark:
+                label += " *"
+            dark_theme_menu.add_command(
+                label=label,
+                command=lambda t=theme: _set_dark_theme(t)
+            )
+
+        view_menu.add_cascade(label="Dark Theme", menu=dark_theme_menu)
+
+    def _set_light_theme(theme):
+        theme_manager.set_light_theme(theme)
+        _rebuild_view_menu()
+
+    def _set_dark_theme(theme):
+        theme_manager.set_dark_theme(theme)
+        _rebuild_view_menu()
+
+    # Build initial view menu
+    _rebuild_view_menu()
+
+    menubar.add_cascade(label="View", menu=view_menu)
 
     # === Option menu ===
     option_menu = Menu(menubar, tearoff=0)

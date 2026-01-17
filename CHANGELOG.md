@@ -4,6 +4,56 @@ All notable changes to Saildeck macOS will be documented in this file.
 
 This project is a fork of [Saildeck by Wolfeni](https://github.com/Wolfeni/Saildeck).
 
+## [1.2.0-macos-beta.1] - 2026-01-17
+
+### Added
+- **Theme Manager** (`theme_manager.py`)
+  - Central theme management with Light/Dark/System modes
+  - System theme detection using `darkdetect`
+  - 4 light themes: Litera, Flatly, Cosmo, Minty
+  - 4 dark themes: Darkly, Superhero, Cyborg, Solar
+  - Theme-aware color provider for custom widgets
+  - Settings persistence with backward-compatible migration
+- **View Menu** in menu bar
+  - Theme Mode submenu (Light/Dark/System)
+  - Light Theme selection submenu
+  - Dark Theme selection submenu
+- **Redesigned Settings Window**
+  - Converted from `tk.Toplevel` to `tb.Toplevel`
+  - Tabbed interface with `tb.Notebook`:
+    - **Appearance**: Theme mode selector, light/dark theme dropdowns
+    - **Behavior**: Skip update, auto-enable AltAssets, confirm before delete
+    - **Advanced**: Game/mods directory display, reset settings button
+  - Live theme preview when changing settings
+- **Confirm before delete** setting - Optional confirmation when deleting mods
+- **Cross-platform font support**
+  - SF Pro Text on macOS
+  - Segoe UI on Windows
+  - Ubuntu on Linux
+
+### Changed
+- `gui.py` - Integrated theme manager, window now resizable (min 700x550)
+- `menubar.py` - Added View menu with theme controls
+- `settings_window.py` - Complete rewrite with tabbed interface
+- `about.py` - Theme-aware colors, converted to ttkbootstrap widgets
+- `delete.py` - Respects `confirm_delete` setting
+- `download/downloader_window.py` - Theme-aware tooltip colors
+- `download/gamebanana/widgets.py` - Platform-aware fonts
+- Settings structure expanded to nested format:
+```json
+  {
+    "appearance": { "theme_mode", "light_theme", "dark_theme" },
+    "behavior": { "skip_update", "enable_altassets", "confirm_delete" }
+  }
+```
+
+### Fixed
+- Hardcoded colors in About window now theme-aware
+- Hardcoded tooltip colors now theme-aware
+- All "Segoe UI" fonts replaced with platform-appropriate fonts
+
+---
+
 ## [1.1.0-macos-beta.1] - 2025-01-17
 
 ### Added

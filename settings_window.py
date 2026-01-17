@@ -1,44 +1,43 @@
-import tkinter as tk
-from tkinter import ttk
-import json
+"""
+Settings Window for Saildeck
+Provides a tabbed interface for configuring application settings.
+"""
+
 import os
 import sys
+import ttkbootstrap as tb
+from ttkbootstrap.constants import *
+from theme_manager import (
+    get_theme_manager,
+    get_platform_font,
+    LIGHT_THEMES,
+    DARK_THEMES,
+    DEFAULT_SETTINGS,
+)
 
-def get_settings_path():
-    if getattr(sys, 'frozen', False):
-        base_path = os.path.dirname(sys.executable)
-    else:
-        base_path = os.path.dirname(__file__)
-    return os.path.join(base_path, "saildeck.data")
-
-def load_settings():
-    path = get_settings_path()
-    if not os.path.exists(path):
-        return {}
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
-
-def save_settings(settings):
-    path = get_settings_path()
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(settings, f, indent=4)
 
 def show_settings(parent):
-    win = tk.Toplevel(parent)
+    """Display the settings window."""
+    theme_manager = get_theme_manager()
+    settings = theme_manager.get_all_settings()
+    font = get_platform_font()
 
+    win = tb.Toplevel(parent)
+    win.title("Settings")
+    win.geometry("450x380")
+    win.resizable(False, False)
+    win.transient(parent)
+    win.grab_set()
+
+    # Set icon
     icon_path = os.path.join(os.path.dirname(__file__), "icon", "icon_question.ico")
     if os.path.exists(icon_path):
         try:
             win.iconbitmap(icon_path)
-        except Exception as e:
-            print(f"[!] Unable to load icon: {e}")
+        except Exception:
+            pass
 
-    win.title("Settings")
-    win.geometry("300x200")
-
+    # Center on parent
     win.update_idletasks()
     parent_x = parent.winfo_rootx()
     parent_y = parent.winfo_rooty()
@@ -49,29 +48,227 @@ def show_settings(parent):
     pos_x = parent_x + (parent_w // 2) - (win_w // 2)
     pos_y = parent_y + (parent_h // 2) - (win_h // 2)
     win.geometry(f"+{pos_x}+{pos_y}")
-    win.resizable(False, False)
 
-    settings = load_settings()
+    # Create notebook for tabs
+    notebook = tb.Notebook(win, bootstyle="default")
+    notebook.pack(fill="both", expand=True, padx=10, pady=10)
 
-    var_skip_update = tk.BooleanVar(value=settings.get("skip_update", False))
-    var_enable_altassets = tk.BooleanVar(value=settings.get("enable_altassets", True))
+    # ========== Appearance Tab ==========
+    appearance_frame = tb.Frame(notebook, padding=15)
+    notebook.add(appearance_frame, text="Appearance")
 
-    ttk.Checkbutton(
-        win,
-        text="Skip update check",
-        variable=var_skip_update
-    ).pack(pady=(15, 5))
+    # Theme Mode
+    tb.Label(
+        appearance_frame,
+        text="Theme Mode",
+        font=(font, 10, "bold")
+    ).pack(anchor="w", pady=(0, 5))
 
-    ttk.Checkbutton(
-        win,
+    theme_mode_frame = tb.Frame(appearance_frame)
+    theme_mode_frame.pack(fill="x", pady=(0, 15))
+
+    theme_mode_var = tb.StringVar(value=settings["appearance"]["theme_mode"])
+
+    for mode, label in [("light", "Light"), ("dark", "Dark"), ("system", "System")]:
+        tb.Radiobutton(
+            theme_mode_frame,
+            text=label,
+            variable=theme_mode_var,
+            value=mode,
+            bootstyle="toolbutton"
+        ).pack(side="left", padx=(0, 10))
+
+    # Light Theme Selection
+    tb.Label(
+        appearance_frame,
+        text="Light Theme",
+        font=(font, 10, "bold")
+    ).pack(anchor="w", pady=(0, 5))
+
+    light_theme_var = tb.StringVar(value=settings["appearance"]["light_theme"])
+    light_theme_combo = tb.Combobox(
+        appearance_frame,
+        textvariable=light_theme_var,
+        values=[t.capitalize() for t in LIGHT_THEMES],
+        state="readonly",
+        width=20
+    )
+    light_theme_combo.pack(anchor="w", pady=(0, 15))
+    # Set display value capitalized
+    light_theme_combo.set(settings["appearance"]["light_theme"].capitalize())
+
+    # Dark Theme Selection
+    tb.Label(
+        appearance_frame,
+        text="Dark Theme",
+        font=(font, 10, "bold")
+    ).pack(anchor="w", pady=(0, 5))
+
+    dark_theme_var = tb.StringVar(value=settings["appearance"]["dark_theme"])
+    dark_theme_combo = tb.Combobox(
+        appearance_frame,
+        textvariable=dark_theme_var,
+        values=[t.capitalize() for t in DARK_THEMES],
+        state="readonly",
+        width=20
+    )
+    dark_theme_combo.pack(anchor="w", pady=(0, 15))
+    # Set display value capitalized
+    dark_theme_combo.set(settings["appearance"]["dark_theme"].capitalize())
+
+    # Preview note
+    tb.Label(
+        appearance_frame,
+        text="Theme changes apply immediately.",
+        font=(font, 9),
+        bootstyle="secondary"
+    ).pack(anchor="w", pady=(10, 0))
+
+    # ========== Behavior Tab ==========
+    behavior_frame = tb.Frame(notebook, padding=15)
+    notebook.add(behavior_frame, text="Behavior")
+
+    tb.Label(
+        behavior_frame,
+        text="Startup",
+        font=(font, 10, "bold")
+    ).pack(anchor="w", pady=(0, 10))
+
+    var_skip_update = tb.BooleanVar(value=settings["behavior"].get("skip_update", False))
+    tb.Checkbutton(
+        behavior_frame,
+        text="Skip update check on startup",
+        variable=var_skip_update,
+        bootstyle="round-toggle"
+    ).pack(anchor="w", pady=(0, 10))
+
+    tb.Label(
+        behavior_frame,
+        text="Mods",
+        font=(font, 10, "bold")
+    ).pack(anchor="w", pady=(10, 10))
+
+    var_enable_altassets = tb.BooleanVar(value=settings["behavior"].get("enable_altassets", True))
+    tb.Checkbutton(
+        behavior_frame,
         text="Auto-enable AltAssets when mods are active",
-        variable=var_enable_altassets
-    ).pack(pady=5)
+        variable=var_enable_altassets,
+        bootstyle="round-toggle"
+    ).pack(anchor="w", pady=(0, 10))
 
-    def on_close():
-        settings["skip_update"] = var_skip_update.get()
-        settings["enable_altassets"] = var_enable_altassets.get()
-        save_settings(settings)
+    var_confirm_delete = tb.BooleanVar(value=settings["behavior"].get("confirm_delete", True))
+    tb.Checkbutton(
+        behavior_frame,
+        text="Confirm before deleting mods",
+        variable=var_confirm_delete,
+        bootstyle="round-toggle"
+    ).pack(anchor="w", pady=(0, 10))
+
+    # ========== Advanced Tab ==========
+    advanced_frame = tb.Frame(notebook, padding=15)
+    notebook.add(advanced_frame, text="Advanced")
+
+    # Game path display
+    tb.Label(
+        advanced_frame,
+        text="Game Directory",
+        font=(font, 10, "bold")
+    ).pack(anchor="w", pady=(0, 5))
+
+    # Get game_dir from parent if available
+    game_dir = getattr(parent, 'game_dir', 'Not available')
+    game_path_entry = tb.Entry(advanced_frame, width=50)
+    game_path_entry.insert(0, str(game_dir))
+    game_path_entry.configure(state="readonly")
+    game_path_entry.pack(anchor="w", pady=(0, 15))
+
+    # Mods directory display
+    tb.Label(
+        advanced_frame,
+        text="Mods Directory",
+        font=(font, 10, "bold")
+    ).pack(anchor="w", pady=(0, 5))
+
+    mods_dir = getattr(parent, 'mods_dir', 'Not available')
+    mods_path_entry = tb.Entry(advanced_frame, width=50)
+    mods_path_entry.insert(0, str(mods_dir))
+    mods_path_entry.configure(state="readonly")
+    mods_path_entry.pack(anchor="w", pady=(0, 15))
+
+    # Reset settings button
+    def reset_settings():
+        """Reset all settings to defaults."""
+        from tkinter import messagebox
+        if messagebox.askyesno("Reset Settings", "Reset all settings to defaults?\n\nThis cannot be undone."):
+            # Reset to defaults
+            for section, values in DEFAULT_SETTINGS.items():
+                for key, value in values.items():
+                    theme_manager.set_setting(section, key, value)
+
+            # Update UI
+            theme_mode_var.set("system")
+            light_theme_combo.set("Litera")
+            dark_theme_combo.set("Darkly")
+            var_skip_update.set(False)
+            var_enable_altassets.set(True)
+            var_confirm_delete.set(True)
+
+            # Apply theme
+            theme_manager.set_theme_mode("system")
+
+    tb.Button(
+        advanced_frame,
+        text="Reset All Settings",
+        command=reset_settings,
+        bootstyle="danger-outline",
+        width=20
+    ).pack(anchor="w", pady=(20, 0))
+
+    # ========== Bottom buttons ==========
+    button_frame = tb.Frame(win)
+    button_frame.pack(fill="x", padx=10, pady=(0, 10))
+
+    def apply_and_close():
+        """Apply settings and close the window."""
+        # Apply appearance settings
+        new_mode = theme_mode_var.get()
+        new_light = light_theme_combo.get().lower()
+        new_dark = dark_theme_combo.get().lower()
+
+        theme_manager.set_setting("appearance", "theme_mode", new_mode)
+        theme_manager.set_setting("appearance", "light_theme", new_light)
+        theme_manager.set_setting("appearance", "dark_theme", new_dark)
+
+        # Apply behavior settings
+        theme_manager.set_setting("behavior", "skip_update", var_skip_update.get())
+        theme_manager.set_setting("behavior", "enable_altassets", var_enable_altassets.get())
+        theme_manager.set_setting("behavior", "confirm_delete", var_confirm_delete.get())
+
+        # Apply theme if mode changed
+        theme_manager.set_theme_mode(new_mode)
+
         win.destroy()
 
-    ttk.Button(win, text="Close", command=on_close).pack(pady=10)
+    def on_theme_change(*args):
+        """Apply theme changes immediately for preview."""
+        new_mode = theme_mode_var.get()
+        new_light = light_theme_combo.get().lower()
+        new_dark = dark_theme_combo.get().lower()
+
+        # Temporarily set and apply
+        theme_manager._settings["appearance"]["light_theme"] = new_light
+        theme_manager._settings["appearance"]["dark_theme"] = new_dark
+        theme_manager.set_theme_mode(new_mode)
+
+    # Bind changes to immediate preview
+    theme_mode_var.trace_add("write", on_theme_change)
+    light_theme_combo.bind("<<ComboboxSelected>>", on_theme_change)
+    dark_theme_combo.bind("<<ComboboxSelected>>", on_theme_change)
+
+    tb.Button(
+        button_frame,
+        text="Close",
+        command=apply_and_close,
+        bootstyle="primary",
+        width=10
+    ).pack(side="right")
