@@ -39,12 +39,28 @@ class ModManagerGUI(tb.Window):
         # Get initial theme from theme manager
         self.theme_manager = get_theme_manager()
         initial_theme = self.theme_manager.get_effective_theme()
-        super().__init__(themename=initial_theme)
 
-        # Set root window and current theme without re-applying (already applied by super().__init__)
+        # If it's a special theme, we need to start with a base theme
+        # then switch after the window is created (special themes need registration)
+        from theme_manager import SPECIAL_THEMES
+        if initial_theme in SPECIAL_THEMES:
+            # Start with darkly, will switch to CRT after registration
+            startup_theme = "darkly"
+        else:
+            startup_theme = initial_theme
+
+        super().__init__(themename=startup_theme)
+
+        # Set root window and style
         self.theme_manager._root = self
         self.theme_manager._style = tb.Style()
-        self.theme_manager._current_theme = initial_theme
+
+        # Now register and apply special themes if needed
+        if initial_theme in SPECIAL_THEMES:
+            self.theme_manager._register_special_themes()
+            self.theme_manager._apply_theme(initial_theme)
+        else:
+            self.theme_manager._current_theme = initial_theme
 
         self.title("Saildeck — Mod manager for Ship of Harkinian")
         self.geometry("700x600")
