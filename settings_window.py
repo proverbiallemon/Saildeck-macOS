@@ -125,85 +125,39 @@ def show_settings(parent):
         bootstyle="secondary"
     ).pack(anchor="w", pady=(10, 0))
 
-    # ========== CRT Effects Tab ==========
-    crt_frame = tb.Frame(notebook, padding=15)
-    notebook.add(crt_frame, text="CRT Effects")
+    # ========== Special Themes Tab ==========
+    special_frame = tb.Frame(notebook, padding=15)
+    notebook.add(special_frame, text="Special Themes")
 
     tb.Label(
-        crt_frame,
-        text="Special Theme",
+        special_frame,
+        text="Retro CRT Themes",
         font=(font, 10, "bold")
     ).pack(anchor="w", pady=(0, 5))
+
+    tb.Label(
+        special_frame,
+        text="Apply a retro computer terminal aesthetic with\nphosphor-style colors.",
+        font=(font, 9),
+        bootstyle="secondary"
+    ).pack(anchor="w", pady=(0, 15))
 
     current_special = settings["appearance"].get("special_theme")
     special_theme_var = tb.StringVar(value=current_special or "none")
 
-    special_theme_frame = tb.Frame(crt_frame)
-    special_theme_frame.pack(fill="x", pady=(0, 15))
-
     # Build special theme options
-    special_options = [("none", "None (Standard)")]
+    special_options = [("none", "None (Use standard theme)")]
     for key, data in SPECIAL_THEMES.items():
         special_options.append((key, data["name"]))
 
     for value, label in special_options:
         tb.Radiobutton(
-            special_theme_frame,
+            special_frame,
             text=label,
             variable=special_theme_var,
             value=value,
             bootstyle="toolbutton"
-        ).pack(side="left", padx=(0, 10))
-
-    # CRT Options (scanlines, flicker)
-    crt_options_frame = tb.LabelFrame(crt_frame, text="CRT Options", padding=10)
-    crt_options_frame.pack(fill="x", pady=(10, 0))
-
-    var_scanlines = tb.BooleanVar(value=settings["appearance"].get("crt_scanlines", True))
-    tb.Checkbutton(
-        crt_options_frame,
-        text="Enable scanline overlay",
-        variable=var_scanlines,
-        bootstyle="round-toggle"
-    ).pack(anchor="w", pady=(0, 10))
-
-    # Scanline intensity slider
-    intensity_frame = tb.Frame(crt_options_frame)
-    intensity_frame.pack(fill="x", pady=(0, 10))
-
-    tb.Label(
-        intensity_frame,
-        text="Scanline Intensity:",
-        font=(font, 9)
-    ).pack(side="left")
-
-    intensity_value = settings["appearance"].get("crt_scanline_intensity", 0.3)
-    var_intensity = tb.DoubleVar(value=intensity_value)
-
-    intensity_slider = tb.Scale(
-        intensity_frame,
-        from_=0.1,
-        to=0.8,
-        variable=var_intensity,
-        orient="horizontal",
-        length=150
-    )
-    intensity_slider.pack(side="left", padx=(10, 10))
-
-    intensity_label = tb.Label(intensity_frame, text=f"{intensity_value:.1f}", font=(font, 9))
-    intensity_label.pack(side="left")
-
-    def update_intensity_label(*args):
-        intensity_label.configure(text=f"{var_intensity.get():.1f}")
-
-    var_intensity.trace_add("write", update_intensity_label)
-
-    tb.Label(
-        crt_options_frame,
-        text="Note: CRT themes apply retro phosphor colors.\nScanline overlay follows the main window.",
-        font=(font, 8),
-        bootstyle="secondary"
-    ).pack(anchor="w", pady=(10, 0))
+        ).pack(anchor="w", pady=3)
 
     def on_special_theme_change(*args):
         """Apply special theme changes immediately."""
@@ -211,14 +165,7 @@ def show_settings(parent):
         theme_key = None if value == "none" else value
         theme_manager.set_special_theme(theme_key)
 
-    def on_crt_option_change(*args):
-        """Apply CRT option changes."""
-        theme_manager.set_crt_scanlines_enabled(var_scanlines.get())
-        theme_manager.set_crt_scanline_intensity(var_intensity.get())
-
     special_theme_var.trace_add("write", on_special_theme_change)
-    var_scanlines.trace_add("write", on_crt_option_change)
-    var_intensity.trace_add("write", on_crt_option_change)
 
     # ========== Behavior Tab ==========
     behavior_frame = tb.Frame(notebook, padding=15)
@@ -306,8 +253,6 @@ def show_settings(parent):
             light_theme_combo.set("Litera")
             dark_theme_combo.set("Darkly")
             special_theme_var.set("none")
-            var_scanlines.set(True)
-            var_intensity.set(0.3)
             var_skip_update.set(False)
             var_enable_altassets.set(True)
             var_confirm_delete.set(True)

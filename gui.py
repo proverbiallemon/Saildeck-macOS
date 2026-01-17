@@ -15,7 +15,6 @@ from save_modpacks import save_modpack, list_modpacks, load_modpack
 from delete import delete_mod
 from platform_handler import get_platform_handler
 from theme_manager import get_theme_manager, get_platform_font
-from crt_effects import ScanlineOverlay
 
 if sys.platform == "win32":
     import ctypes
@@ -102,14 +101,8 @@ class ModManagerGUI(tb.Window):
         self.after(100, self.force_style_reload)
         self.after(100, self.refresh_mod_list)
 
-        # Initialize CRT scanline overlay
-        self.scanline_overlay = ScanlineOverlay(
-            self,
-            intensity=self.theme_manager.get_crt_scanline_intensity(),
-            line_spacing=2
-        )
+        # Register for theme change callbacks
         self.theme_manager.register_callback(self._on_theme_change)
-        self._update_crt_effects()
 
         self.lift()
         self.attributes('-topmost', True)
@@ -121,23 +114,8 @@ class ModManagerGUI(tb.Window):
 
     def _on_theme_change(self):
         """Handle theme changes from theme manager."""
-        self._update_crt_effects()
-
-    def _update_crt_effects(self):
-        """Update CRT effects based on current settings."""
-        is_crt_active = self.theme_manager.is_special_theme_active()
-        scanlines_enabled = self.theme_manager.get_crt_scanlines_enabled()
-
-        # Update scanline intensity
-        self.scanline_overlay.set_intensity(
-            self.theme_manager.get_crt_scanline_intensity()
-        )
-
-        if is_crt_active and scanlines_enabled:
-            if not self.scanline_overlay.enabled:
-                self.scanline_overlay.enable()
-        else:
-            self.scanline_overlay.disable()
+        # Theme changes are handled by ttkbootstrap automatically
+        pass
 
     def force_style_reload(self):
         try:

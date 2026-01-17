@@ -79,8 +79,6 @@ DEFAULT_SETTINGS = {
         "light_theme": "litera",
         "dark_theme": "darkly",
         "special_theme": None,  # None or key from SPECIAL_THEMES
-        "crt_scanlines": True,
-        "crt_scanline_intensity": 0.3,  # 0.0 to 1.0
     },
     "behavior": {
         "skip_update": False,
@@ -484,27 +482,6 @@ class ThemeManager:
         # Re-apply theme to activate/deactivate special styling
         theme_name = self.get_effective_theme()
         self._apply_theme(theme_name)
-
-    def get_crt_scanlines_enabled(self):
-        """Check if CRT scanlines are enabled."""
-        return self._settings.get("appearance", {}).get("crt_scanlines", True)
-
-    def set_crt_scanlines_enabled(self, enabled):
-        """Enable or disable CRT scanlines."""
-        self._settings["appearance"]["crt_scanlines"] = bool(enabled)
-        save_settings(self._settings)
-        self._notify_callbacks()
-
-    def get_crt_scanline_intensity(self):
-        """Get the CRT scanline intensity (0.0 to 1.0)."""
-        return self._settings.get("appearance", {}).get("crt_scanline_intensity", 0.3)
-
-    def set_crt_scanline_intensity(self, intensity):
-        """Set the CRT scanline intensity (0.0 to 1.0)."""
-        intensity = max(0.0, min(1.0, float(intensity)))
-        self._settings["appearance"]["crt_scanline_intensity"] = intensity
-        save_settings(self._settings)
-        self._notify_callbacks()
 
     def is_special_theme_active(self):
         """Check if a special theme is currently active."""

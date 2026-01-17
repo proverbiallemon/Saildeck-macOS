@@ -118,24 +118,6 @@ def init_menubar(window):
 
         view_menu.add_cascade(label="Special Themes", menu=special_theme_menu)
 
-        # CRT options (only show when CRT theme is active)
-        if current_special and current_special.startswith("crt_"):
-            view_menu.add_separator()
-            crt_menu = Menu(view_menu, tearoff=0)
-
-            # Scanlines toggle
-            scanlines_label = "Scanlines"
-            if theme_manager.get_crt_scanlines_enabled():
-                scanlines_label += " [ON]"
-            else:
-                scanlines_label += " [OFF]"
-            crt_menu.add_command(
-                label=scanlines_label,
-                command=_toggle_scanlines
-            )
-
-            view_menu.add_cascade(label="CRT Effects", menu=crt_menu)
-
     def _set_light_theme(theme):
         theme_manager.set_light_theme(theme)
         _rebuild_view_menu()
@@ -146,11 +128,6 @@ def init_menubar(window):
 
     def _set_special_theme(theme_key):
         theme_manager.set_special_theme(theme_key)
-        _rebuild_view_menu()
-
-    def _toggle_scanlines():
-        current = theme_manager.get_crt_scanlines_enabled()
-        theme_manager.set_crt_scanlines_enabled(not current)
         _rebuild_view_menu()
 
     # Build initial view menu
