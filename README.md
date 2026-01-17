@@ -8,6 +8,8 @@ A macOS port of [Saildeck](https://github.com/Wolfeni/Saildeck) - a mod manager 
 
 This is a **macOS-compatible fork** of [Saildeck by Wolfeni](https://github.com/Wolfeni/Saildeck). The original Saildeck was designed for Windows only. This fork adds platform abstraction to support macOS while maintaining full Windows compatibility.
 
+> **Note**: This fork may include additional features and improvements not present in the original Windows version. See [What's New in This Fork](#whats-new-in-this-fork) for details.
+
 ### Credits
 
 - **Original Author**: [Wolfeni](https://github.com/Wolfeni)
@@ -16,16 +18,20 @@ This is a **macOS-compatible fork** of [Saildeck by Wolfeni](https://github.com/
 
 This fork is released under the same **GPL-3.0 license** as the original.
 
-## What's Changed (macOS Port)
+## What's New in This Fork
 
-- Added platform abstraction layer (`platform_handler/`) for cross-platform support
+### macOS Support
+- Platform abstraction layer (`platform_handler/`) for cross-platform support
 - macOS-specific paths:
   - Game detection: `/Applications/soh.app` or `~/Applications/soh.app`
   - Mods folder: `~/Library/Application Support/com.shipofharkinian.soh/mods/`
   - Config: `~/Library/Application Support/com.shipofharkinian.soh/shipofharkinian.json`
-- Translated all French strings to English
-- Fixed Windows-only dependencies (`pywin32-ctypes` now conditional)
 - Uses `open` command instead of `os.startfile()` for Finder integration
+- Fixed Windows-only dependencies (`pywin32-ctypes` now conditional)
+
+### Additional Features
+- **Open Mods Folder button** - Quick access to your mods directory from the main UI
+- All strings translated to English (original was French)
 
 ## Requirements
 
@@ -73,6 +79,7 @@ pip install -r requirements.txt
 
 - Toggle mods on/off (double-click or use Toggle button)
 - Delete mods (sends to Trash)
+- Open mods folder directly in Finder
 - Save/Load mod profiles
 - Export/Import modpacks as ZIP
 - Auto-enable AltAssets when mods are active
