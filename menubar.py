@@ -2,7 +2,7 @@ from tkinter import Menu
 import about
 import settings_window
 import export_modpacks
-from theme_manager import get_theme_manager, LIGHT_THEMES, DARK_THEMES
+from theme_manager import get_theme_manager, LIGHT_THEMES, DARK_THEMES, SPECIAL_THEMES
 
 
 def init_menubar(window):
@@ -88,12 +88,85 @@ def init_menubar(window):
 
         view_menu.add_cascade(label="Dark Theme", menu=dark_theme_menu)
 
+        # Separator before special themes
+        view_menu.add_separator()
+
+        # Special themes submenu
+        special_theme_menu = Menu(view_menu, tearoff=0)
+        current_special = theme_manager.get_special_theme()
+
+        # Option to disable special themes
+        none_label = "None (Standard)"
+        if current_special is None:
+            none_label += " *"
+        special_theme_menu.add_command(
+            label=none_label,
+            command=lambda: _set_special_theme(None)
+        )
+
+        special_theme_menu.add_separator()
+
+        # Add special theme options
+        for theme_key, theme_data in SPECIAL_THEMES.items():
+            label = theme_data["name"]
+            if theme_key == current_special:
+                label += " *"
+            special_theme_menu.add_command(
+                label=label,
+                command=lambda t=theme_key: _set_special_theme(t)
+            )
+
+        view_menu.add_cascade(label="Special Themes", menu=special_theme_menu)
+
+        # CRT options (only show when CRT theme is active)
+        if current_special and current_special.startswith("crt_"):
+            view_menu.add_separator()
+            crt_menu = Menu(view_menu, tearoff=0)
+
+            # Scanlines toggle
+            scanlines_label = "Scanlines"
+            if theme_manager.get_crt_scanlines_enabled():
+                scanlines_label += " [ON]"
+            else:
+                scanlines_label += " [OFF]"
+            crt_menu.add_command(
+                label=scanlines_label,
+                command=_toggle_scanlines
+            )
+
+            # Flicker toggle
+            flicker_label = "Flicker Effect"
+            if theme_manager.get_crt_flicker_enabled():
+                flicker_label += " [ON]"
+            else:
+                flicker_label += " [OFF]"
+            crt_menu.add_command(
+                label=flicker_label,
+                command=_toggle_flicker
+            )
+
+            view_menu.add_cascade(label="CRT Effects", menu=crt_menu)
+
     def _set_light_theme(theme):
         theme_manager.set_light_theme(theme)
         _rebuild_view_menu()
 
     def _set_dark_theme(theme):
         theme_manager.set_dark_theme(theme)
+        _rebuild_view_menu()
+
+    def _set_special_theme(theme_key):
+        theme_manager.set_special_theme(theme_key)
+        _rebuild_view_menu()
+
+    def _toggle_scanlines():
+        current = theme_manager.get_crt_scanlines_enabled()
+        theme_manager.set_crt_scanlines_enabled(not current)
+        _rebuild_view_menu()
+
+    def _toggle_flicker():
+        current = theme_manager.get_crt_flicker_enabled()
+        theme_manager.set_crt_flicker_enabled(not current)
         _rebuild_view_menu()
 
     # Build initial view menu
