@@ -4,6 +4,39 @@ All notable changes to Saildeck macOS will be documented in this file.
 
 This project is a fork of [Saildeck by Wolfeni](https://github.com/Wolfeni/Saildeck).
 
+## [1.3.0-macos] - 2026-01-17
+
+### Added
+- **GameBanana Mod Browser** (`download/` module)
+  - Browse Ship of Harkinian mods directly from GameBanana
+  - Search mods by name with real-time results
+  - Filter by category (Models, Textures, Music, Audio, Skins, etc.)
+  - One-click download and install to mods folder
+  - Progress bar during downloads
+  - ZIP and 7z archive extraction support
+  - Mods automatically organized into subfolders by name
+  - Lazy-load file info for faster browsing
+- **GameBanana V11 API Integration** (`download/gamebanana/api.py`)
+  - Full V11 API support with pagination
+  - Mod metadata: images, authors, view/like counts
+  - On-demand file info fetching
+
+### Security
+- **Zip Slip Protection** - Path validation prevents malicious archives from writing outside target directory
+- **MD5 Checksum Verification** - Downloaded files verified against GameBanana checksums
+- **File Safety Validation** - Files flagged by GameBanana analysis are blocked
+- **Race Condition Fix** - Atomic folder naming using UUID prevents conflicts
+
+### Changed
+- `gui.py` - Download Mods button now functional, opens mod browser
+- Theme-aware canvas background in downloader window
+
+### Fixed
+- Bare `except` clauses replaced with specific exception types
+- Thread-unsafe lambda closures in download progress callbacks
+
+---
+
 ## [1.2.0-macos-beta.1] - 2026-01-17
 
 ### Added
