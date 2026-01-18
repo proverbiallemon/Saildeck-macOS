@@ -1,5 +1,7 @@
 # Saildeck macOS
 
+> **Looking for a more polished experience?** Check out [Sailswift](https://github.com/proverbiallemon/Sailswift) - a native Swift/SwiftUI rewrite of this project. Sailswift is actively maintained with faster updates, better performance, and additional features like one-click mod installation from GameBanana via custom URL scheme.
+
 A macOS port of [Saildeck](https://github.com/Wolfeni/Saildeck) - a mod manager for Ship of Harkinian.
 
 ![Saildeck_logo](https://github.com/user-attachments/assets/187e5820-cc41-46e6-a94a-68127e50c4bc)
